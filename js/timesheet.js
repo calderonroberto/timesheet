@@ -37,10 +37,10 @@ validationApp.controller('mainController', function($scope,$timeout) {
 
   $scope.resetForm = function() {
     $scope.email = "";
-    $scope.time = {
-      start: new Date(1970, 0, 1, 8, 0, 0),
-      end: new Date(1970, 0, 1, 17, 0, 0)
-    };
+    $scope.time.start = new Date(1970, 0, 1, 8, 0, 0);
+    $scope.time.end = new Date(1970, 0, 1, 17, 0, 0);
+    $scope.time.minutes = 0;
+    $scope.time.hours = 0;
     $scope.message = angular.copy($scope.master);
     $scope.work = angular.copy($scope.master);
     $scope.userForm.$setPristine();
@@ -60,4 +60,5 @@ validationApp.controller('mainController', function($scope,$timeout) {
   };
 
   $scope.showForm(); //Set the initial state
+
 });
