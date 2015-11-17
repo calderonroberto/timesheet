@@ -1,0 +1,209 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Title</title>
+  <meta name="description" content="The HTML5 Herald">
+  <meta name="author" content="SitePoint">
+  <script type="text/javascript" src="js/angular.min.js"></script>
+
+  <!-- load bootstrap -->
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+
+  <style>
+    #spinner {
+      background-color: rgba(0, 0, 0, 0.2);
+      position:absolute; top:0; left:0;
+      width: 100%; height: 100%;
+      z-index: 1000;
+    }
+    #spinner img {
+        position:absolute;
+        left: calc(50% - 64px);
+        top:calc(50% - 64px);
+    }
+    #thanksMessage {
+      text-align:center;
+    }
+
+    #thanksMessage img {
+      max-width: 40%;
+      padding-bottom: 15px;
+    }
+
+    #thanksMessage p {
+      line-height: 200%;
+    }
+
+    /*Minimal adjustments to bootstrap theme*/
+    .btn-option {
+      font-size: 9pt;
+    }
+    .navbar h1{
+      color:#999999;
+      text-align:center;
+    }
+
+  </style>
+
+</head>
+
+
+<body ng-app="validationApp" ng-controller="mainController">
+
+  <div id="spinner" ng-show="spinnerShow" class="ng-hide" >
+    <img src="img/spinner.gif" />
+  </div>
+
+
+<nav class="navbar navbar-inverse navbar-static-top">
+  <h1>{{navbarName}}</h1>
+</nav>
+
+<div class="container">
+
+
+
+<div class="col-sm-8 col-sm-offset-2">
+
+    <!-- FORM -->
+    <form name="userForm" ng-submit="submitForm(userForm.$valid, userForm.$pristine)" class="form-group has-feedback" ng-class="timesheetForm" novalidate>
+        <!-- EMAIL -->
+        <div class="form-group" ng-class="{ 'has-error' : userForm.email.$invalid && !userForm.email.$pristine }">
+          <input placeholder="Email: artist@gener8.com" type="email" name="email" class="form-control" ng-model="email" required>
+          <span ng-show="userForm.email.$invalid && !userForm.email.$pristine" class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+        </div>
+        <!-- TIME -->
+        <div class="form-group" ng-class="{ 'has-error has-feedback' : userForm.timeStart.$invalid && !userForm.time.$pristine }">
+
+          <div class="input-group">
+            <span class="input-group-addon">Start</span>
+            <input id="timeStart" ng-model="time.start" type="time" placeholder="HH:mm" min="08:00:00" max="24:00:00" name="timeStart" ng-change="time.change()" required >
+
+            <span class="input-group-addon">End</span>
+            <input id="timeEnd" ng-model="time.end" type="time" placeholder="HH:mm" min="00:00" max="24:00" name="timeEnd" ng-change="time.change()" required >
+          </div>
+          <p>Hours: {{time.hours}} Minutes: {{time.minutes}}</p>
+          <p ng-show="userForm.timeStart.$invalid && !userForm.timeStart.$pristine" class="help-block">Enter a valid time.</p>
+          <span ng-show="userForm.timeStart.$invalid && !userForm.timeStart.$pristine" class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+      </div>
+
+      <!-- MESSAGE -->
+      <div class="form-group">
+          <textarea id="message" placeholder="Message(optional):" class="form-control" ng-model="message" rows="3"></textarea>
+      </div>
+
+      <!-- TYPE OF WORK -->
+      <div class="form-group">
+      <input type="hidden" name="workType"  ng-model="work.type" value={{work}} >
+
+      <div class="btn-group-vertical btn-block" role="group">
+        <button type="button" class="btn btn-default btn-lg btn-option" ng-click="work=1">Time working on visual effects
+        <span ng-show="work==1" class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="btn btn-default btn-lg btn-option" ng-click="work=2">Time spent reviewing the work of a junior artist
+        <span ng-show="work==2" class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>
+        </button>
+     </div>
+   </div>
+
+   <!-- CLEAR AND SUBMITT BUTTONS -->
+   <div class="form-group">
+
+   <div class="btn-group btn-group-justified" role="group" aria-label="...">
+     <div class="btn-group" role="group">
+       <button class="btn" ng-click="resetForm()" ng-disabled="userForm.$pristine">Clear</button>
+    </div>
+    <div class="btn-group" role="group">
+      <button type="submit" class="btn btn-primary"
+    ng-click="submitForm()" ng-disabled="userForm.$invalid || userForm.$pristine">Next</button>
+    </div>
+  </div>
+</div>
+  </form>
+
+  <!-- THANK YOU MESSAGE -->
+  <div ng-class="thanksMessage" id="thanksMessage">
+    <img src="img/checkmark.png"></img>
+    <p>Thank you {{email}}</p>
+    <p>You have logged {{time.hours}}h and {{time.minutes}}m of work today.</p>
+    <button class="btn btn-primary btn-block" ng-click="resetForm()">Start Again</button>
+  </div>
+
+
+</div><!-- col-sm-8 -->
+</div><!-- /container -->
+
+<script type="text/javascript">
+
+var validationApp = angular.module('validationApp', []);
+
+validationApp.controller('mainController', function($scope,$timeout) {
+
+$scope.time = {
+    start: new Date(1970, 0, 1, 8, 00, 0),
+    end: new Date(1970, 0, 1, 17, 00, 0)
+};
+
+$scope.time.change = function ($log) {
+  var timeDiff = $scope.time.end - $scope.time.start || 0;
+  if (timeDiff > 0) {
+    var minutes = timeDiff/ (1000 * 60);
+    $scope.time.minutes = minutes % 60;
+    $scope.time.hours = minutes / 60 | 0;
+    $scope.userForm.timeStart.$setValidity("default", true);
+  } else {
+    $scope.time.minutes = 0
+    $scope.time.hours = 0;
+    $scope.userForm.timeStart.$setValidity("default", false);
+  }
+
+};
+
+$scope.submitForm = function(isValid, isPristine) {
+  if (isValid && !isPristine) {
+    $scope.spinnerShow = true;
+
+    // This is just a stub for an ajax request. We would
+    // pass all the models (email, time, message and work)
+    $timeout(reqDone, 1000);
+    function reqDone() {
+        $scope.spinnerShow = false;
+        $scope.showThanks();
+    }
+  }
+};
+
+$scope.resetForm = function() {
+  $scope.email = ""
+  $scope.time = {
+    start: new Date(1970, 0, 1, 8, 00, 0),
+    end: new Date(1970, 0, 1, 17, 00, 0)};
+  $scope.message = angular.copy($scope.master);
+  $scope.work = angular.copy($scope.master);
+  $scope.userForm.$setPristine();
+  $scope.showForm();
+};
+
+
+$scope.showForm = function() {
+  $scope.navbarName = "Submit Timesheet"
+  $scope.timesheetForm = "";
+  $scope.thanksMessage = "hidden";
+}
+
+$scope.showThanks = function(){
+  $scope.navbarName = "Timesheet Submitted"
+  $scope.timesheetForm = "hidden";
+  $scope.thanksMessage = "";
+}
+$scope.showForm();
+});
+
+</script>
+
+
+</body>
+</html>
