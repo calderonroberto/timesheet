@@ -8,6 +8,8 @@ validationApp.controller('mainController', function($scope,$timeout) {
   };
 
   // We want fancy time calculations, and ease of input.
+  // Validating this with a text input would be easier, but
+  // ease of use over typing is always nice.
   $scope.time.change = function () {
     var timeDiff = $scope.time.end - $scope.time.start || 0;
     if (timeDiff > 0) {
